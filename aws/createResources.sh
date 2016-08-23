@@ -1,7 +1,20 @@
 #!/usr/bin/env bash
 
-ROOT_NAME=DevDay2
-BUCKET_NAME=budilov-$ROOT_NAME
+#root name
+if [[ $1 == "--root-name" ]]; then
+    ROOT_NAME=$2
+else
+    echo 'Usage: createResources.sh --root-name Name'
+    exit 1
+fi
+
+#bucket
+if [[ $3 == "--bucket-name" ]]; then
+    BUCKET_NAME=$4
+else
+    BUCKET_NAME=bucket-$ROOT_NAME
+fi
+
 TABLE_NAME=LoginTrail$ROOT_NAME
 ROLE_NAME_PREFIX=$ROOT_NAME
 POOL_NAME=$ROOT_NAME
@@ -24,7 +37,6 @@ aws dynamodb create-table \
     --key-schema AttributeName=userId,KeyType=HASH AttributeName=activityDate,KeyType=RANGE \
     --provisioned-throughput ReadCapacityUnits=1,WriteCapacityUnits=1 \
     --region $REGION
-
 
 # Create a Cognito Identity and Set roles
 aws cognito-identity create-identity-pool --identity-pool-name $IDENTITY_POOL_NAME --allow-unauthenticated-identities --region $REGION| grep IdentityPoolId | awk '{print $2}' | xargs |sed -e 's/^"//'  -e 's/"$//' -e 's/,$//' > /tmp/poolId
